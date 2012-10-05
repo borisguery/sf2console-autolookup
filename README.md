@@ -43,6 +43,23 @@ It will run `sf2projectroot/app/console`
 If you move into another project, you can re-run the same command and the according console
 will be run.
 
+Tips
+----
+
+This tip is not only applicable to this script but most of the little tools you may find.
+
+Make a `bin/` directory into your home (may it be `/home/username` or `/Users/username`) 
+
+```bash
+$ mkdir ~/bin
+```
+
+Then add it to your `$PATH` env variable, in your `.bash_profile` (or whatever it may be)
+
+```
+PATH=$PATH:~/bin
+```
+
 Contributing
 ------------
 
