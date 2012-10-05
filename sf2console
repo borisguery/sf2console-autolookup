@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+# Configuration
+# =============
+
+# APP_ROOT & WEB_ROOT are the two minimum folder presents in sf2 project
+SF2_COMMON_APP_ROOT="app"
+SF2_COMMON_WEB_ROOT="web"
+SF2_COMMON_CONSOLE_FILENAME="console"
+# Show or not the project root path when running the console
+SHOW_PATH=0
+
+# Main
+# ====
+START_CWD=$(pwd)
+CURRENT_CWD="$START_CWD"
+CONSOLE_PATH_FOUND=0
+CONSOLE_PATH=""
+SF2_PROJECT_ROOT=""
+
+# Because OSX doesn't provide any tool to get the absolute path easily
+realpath() {
+    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}" | sed 's/\/\(\.\)$//g;s/\/$//g'
+}
+
+if [ -d "app" ]; then
+    CONSOLE_PATH=$(find .*/app -name "$SF2_COMMON_CONSOLE_FILENAME")
+    if [ -n "$CONSOLE_PATH" ]; then
+        CONSOLE_PATH_FOUND=1
+    fi
+fi
+
+while [ "$CONSOLE_PATH_FOUND" -eq 0 -a "$START_CWD" != "/" ]; do
+    OLD_IFS="$IFS"
+    IFS=$"
+    ";
+    for DIR in $(find "$START_CWD" -type d -print);
+    do
+        if [ -d "$DIR/$SF2_COMMON_WEB_ROOT" -a -d "$DIR/$SF2_COMMON_APP_ROOT" ]; then
+            DIR=$(realpath $DIR)
+            DIRS=( ${DIRS[@]} $DIR )
+            for DIR in "${DIRS[@]}"
+            do
+                CONSOLE_PATH=$(find "$DIR"/app -name "$SF2_COMMON_CONSOLE_FILENAME")
+                if [ -n "$CONSOLE_PATH" ]; then
+                    CONSOLE_FILENAME=$(basename $CONSOLE_PATH)
+                    CONSOLE_PATH=$(cd "$(dirname "$CONSOLE_PATH")"; pwd)
+                    CONSOLE_PATH="$CONSOLE_PATH"
+                    CONSOLE_PATH_FOUND=1
+                    break
+                fi
+            done
+        fi
+    done
+    IFS="$OLD_IFS";
+    START_CWD=$(realpath "$START_CWD/..")
+done;
+
+if [ "$CONSOLE_PATH_FOUND" -eq 0 ]; then
+    echo "console not found."
+    exit 1
+fi
+
+if [ "$SHOW_PATH" -eq 1 ]; then
+    printf "Using console at \033[4m%s\033[0m\n\n" $(cd "$(dirname "$CONSOLE_PATH"../)"; pwd)
+fi
+
+$CONSOLE_PATH/$CONSOLE_FILENAME $@
