@@ -40,6 +40,9 @@ $ sf2console twig:lint somefile
 
 It will run `sf2projectroot/app/console`
 
+If you move into another project, you can re-run the same command and the according console
+will be run.
+
 Contributing
 ------------
 
