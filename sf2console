@@ -28,7 +28,6 @@ if [ -d "app" ]; then
     if [ -n "$CONSOLE_PATH" ]; then
         CONSOLE_FILENAME=$(basename $CONSOLE_PATH | sed 's/\/\(\.\)$//g;s/\/$//g')
         CONSOLE_PATH=$(cd "$(dirname "$CONSOLE_PATH")"; pwd)
-        CONSOLE_PATH="$CONSOLE_PATH"
         CONSOLE_PATH_FOUND=1
     fi
 fi
@@ -48,7 +47,6 @@ while [ "$CONSOLE_PATH_FOUND" -eq 0 -a "$START_CWD" != "/" ]; do
                 if [ -n "$CONSOLE_PATH" ]; then
                     CONSOLE_FILENAME=$(basename $CONSOLE_PATH | sed 's/\/\(\.\)$//g;s/\/$//g')
                     CONSOLE_PATH=$(cd "$(dirname "$CONSOLE_PATH")"; pwd)
-                    CONSOLE_PATH="$CONSOLE_PATH"
                     CONSOLE_PATH_FOUND=1
                     break
                 fi
