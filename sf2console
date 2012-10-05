@@ -26,6 +26,9 @@ realpath() {
 if [ -d "app" ]; then
     CONSOLE_PATH=$(find .*/app -name "$SF2_COMMON_CONSOLE_FILENAME")
     if [ -n "$CONSOLE_PATH" ]; then
+        CONSOLE_FILENAME=$(basename $CONSOLE_PATH | sed 's/\/\(\.\)$//g;s/\/$//g')
+        CONSOLE_PATH=$(cd "$(dirname "$CONSOLE_PATH")"; pwd)
+        CONSOLE_PATH="$CONSOLE_PATH"
         CONSOLE_PATH_FOUND=1
     fi
 fi
@@ -43,7 +46,7 @@ while [ "$CONSOLE_PATH_FOUND" -eq 0 -a "$START_CWD" != "/" ]; do
             do
                 CONSOLE_PATH=$(find "$DIR"/app -name "$SF2_COMMON_CONSOLE_FILENAME")
                 if [ -n "$CONSOLE_PATH" ]; then
-                    CONSOLE_FILENAME=$(basename $CONSOLE_PATH)
+                    CONSOLE_FILENAME=$(basename $CONSOLE_PATH | sed 's/\/\(\.\)$//g;s/\/$//g')
                     CONSOLE_PATH=$(cd "$(dirname "$CONSOLE_PATH")"; pwd)
                     CONSOLE_PATH="$CONSOLE_PATH"
                     CONSOLE_PATH_FOUND=1
@@ -66,3 +69,4 @@ if [ "$SHOW_PATH" -eq 1 ]; then
 fi
 
 $CONSOLE_PATH/$CONSOLE_FILENAME $@
+
