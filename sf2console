@@ -9,6 +9,7 @@ SF2_COMMON_WEB_ROOT="web"
 SF2_COMMON_CONSOLE_FILENAME="console"
 # Show or not the project root path when running the console
 SHOW_PATH=0
+DRY_RUN=0
 
 # Main
 # ====
@@ -17,13 +18,35 @@ CURRENT_CWD="$START_CWD"
 CONSOLE_PATH_FOUND=0
 CONSOLE_PATH=""
 SF2_PROJECT_ROOT=""
+QUIET=0
 
-# Because OSX doesn't provide any tool to get the absolute path easily
+usage() {
+    cat << EOF
+    usage: $0 options
+
+    OPTIONS:
+      -h Show this message
+      -s Display the path of the closest console without running it
+EOF
+}
+
+# Because OSX doesn't provide any tool to get the absolute path easily, afaik.
 realpath() {
     [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}" | sed 's/\/\(\.\)$//g;s/\/$//g'
 }
 
-printf "Looking up for console path..."
+if [[ "$1" = "--show-path" ]]; then
+    SHOW_PATH=1
+    DRY_RUN=1
+elif [[ "$1" = "--path-only" ]]; then
+    SHOW_PATH=1
+    QUIET=1
+    DRY_RUN=1
+fi
+
+if [ "$QUIET" -eq 0 ]; then
+    printf "Looking up for console path..."
+fi
 
 if [ -d "app" ]; then
     CONSOLE_PATH=$(find .*/app -name "$SF2_COMMON_CONSOLE_FILENAME")
@@ -67,8 +90,14 @@ if [ "$CONSOLE_PATH_FOUND" -eq 0 ]; then
 fi
 
 if [ "$SHOW_PATH" -eq 1 ]; then
-    printf "Using console at \033[4m%s\033[0m\n\n" $(cd "$(dirname "$CONSOLE_PATH"../)"; pwd)
+    if [ "$QUIET" -eq 0 ]; then
+        printf "Project root: \033[4m%s\033[0m\n" $(cd "$(dirname "$CONSOLE_PATH"../)"; pwd)
+        printf "Console path: \033[4m%s\033[0m\n" "$CONSOLE_PATH/$CONSOLE_FILENAME"
+    else
+        printf "%s" "$CONSOLE_PATH/$CONSOLE_FILENAME"
+    fi
 fi
 
-$CONSOLE_PATH/$CONSOLE_FILENAME $@
-
+if [ "$DRY_RUN" -eq 0 ]; then
+    $CONSOLE_PATH/$CONSOLE_FILENAME $@
+fi
