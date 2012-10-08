@@ -22,7 +22,7 @@ It is similar to `git` at use as it can be ran from any of the subfolder.
 Installation
 ------------
 
-Just clone the repository and move the file into `~/bin` (make sure it is in your `$PATH`) 
+Just clone the repository and move the file into `~/bin` (make sure it is in your `$PATH`)
 
 ```bash
 $ git clone git://github.com/borisguery/sf2console-autolookup.git && cd sf2console-autolookup
@@ -48,7 +48,7 @@ Tips
 
 This tip is not only applicable to this script but most of the little tools you may find.
 
-Make a `bin/` directory into your home (may it be `/home/username` or `/Users/username`) 
+Make a `bin/` directory into your home (may it be `/home/username` or `/Users/username`)
 
 ```bash
 $ mkdir ~/bin
@@ -59,6 +59,19 @@ Then add it to your `$PATH` env variable, in your `.bash_profile` (or whatever i
 ```
 PATH=$PATH:~/bin
 ```
+
+Autocomplete
+------------
+
+It is possible to autocomplete your command according to the path found by the script.
+It means that the result of the completion will vary depending on your path.
+
+To enable it, move the `sf2console.complete` into your completion directory. It should be either
+`/etc/bash_completion.d` or `/opt/local/etc/bash_completion.d`.
+
+Make sure to `source /etc/bash_completion.d/sf2console.complete` the moved file to load the autocompletion.
+
+*Note that it is currently a bit slow, because the path needs to be computed on each call*
 
 Contributing
 ------------
