@@ -23,6 +23,8 @@ realpath() {
     [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}" | sed 's/\/\(\.\)$//g;s/\/$//g'
 }
 
+printf "Looking up for console path..."
+
 if [ -d "app" ]; then
     CONSOLE_PATH=$(find .*/app -name "$SF2_COMMON_CONSOLE_FILENAME")
     if [ -n "$CONSOLE_PATH" ]; then
@@ -56,6 +58,8 @@ while [ "$CONSOLE_PATH_FOUND" -eq 0 -a "$START_CWD" != "/" ]; do
     IFS="$OLD_IFS";
     START_CWD=$(realpath "$START_CWD/..")
 done;
+
+printf "\r"
 
 if [ "$CONSOLE_PATH_FOUND" -eq 0 ]; then
     echo "console not found."
