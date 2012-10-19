@@ -10,15 +10,19 @@ SF2_COMMON_CONSOLE_FILENAME="console"
 # Show or not the project root path when running the console
 SHOW_PATH=0
 DRY_RUN=0
+TMP_CACHE_FILE=$(printf "/tmp/.sf2autolookup-%s" $(whoami))
+VERBOSE=0
 
 # Main
 # ====
 START_CWD=$(pwd)
+LAST_CWD=$START_CWD
 CURRENT_CWD="$START_CWD"
 CONSOLE_PATH_FOUND=0
 CONSOLE_PATH=""
 SF2_PROJECT_ROOT=""
 QUIET=0
+USE_CACHE=0
 
 usage() {
     cat << EOF
@@ -35,6 +39,28 @@ realpath() {
     [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}" | sed 's/\/\(\.\)$//g;s/\/$//g'
 }
 
+verbose() {
+    if [[ $VERBOSE -eq 1 ]]; then
+        printf "%s\n" "$@"
+    fi
+}
+
+if [ -f $TMP_CACHE_FILE ]
+then
+    verbose "File cache found."
+    source $TMP_CACHE_FILE
+    if [ "$LAST_CWD" != "$(pwd)" ]; then
+        verbose "Current directory is different since the last run ("$LAST_CWD" != "$(pwd)")"
+        START_CWD=$(pwd)
+        CONSOLE_PATH=""
+        CONSOLE_FILENAME=""
+    else
+        verbose "Using cache: $CONSOLE_PATH/$CONSOLE_FILENAME"
+        USE_CACHE=1
+        CONSOLE_PATH_FOUND=1
+    fi
+fi
+
 if [[ "$1" = "--show-path" ]]; then
     SHOW_PATH=1
     DRY_RUN=1
@@ -44,11 +70,11 @@ elif [[ "$1" = "--path-only" ]]; then
     DRY_RUN=1
 fi
 
-if [ "$QUIET" -eq 0 ]; then
+if [ "$QUIET" -eq 0 -a  "$USE_CACHE" -eq 0 ]; then
     printf "Looking up for console path..."
 fi
 
-if [ -d "app" ]; then
+if [ -d "app" -a "$USE_CACHE" -eq 0 ]; then
     CONSOLE_PATH=$(find .*/app -name "$SF2_COMMON_CONSOLE_FILENAME")
     if [ -n "$CONSOLE_PATH" ]; then
         CONSOLE_FILENAME=$(basename $CONSOLE_PATH | sed 's/\/\(\.\)$//g;s/\/$//g')
@@ -57,7 +83,7 @@ if [ -d "app" ]; then
     fi
 fi
 
-while [ "$CONSOLE_PATH_FOUND" -eq 0 -a "$START_CWD" != "/" ]; do
+while [ "$CONSOLE_PATH_FOUND" -eq 0 -a "$START_CWD" != "/" -a "$USE_CACHE" -eq 0 ]; do
     OLD_IFS="$IFS"
     IFS=$"
     ";
@@ -99,5 +125,13 @@ if [ "$SHOW_PATH" -eq 1 ]; then
 fi
 
 if [ "$DRY_RUN" -eq 0 ]; then
+    verbose "Writing cache.."
+    touch "$TMP_CACHE_FILE"
+    echo $CONSOLE_PATH
+    cat <<< "LAST_CWD=\""$(PWD)\""
+CONSOLE_PATH=\""$CONSOLE_PATH\""
+CONSOLE_FILENAME=\""$CONSOLE_FILENAME\""
+" > $(realpath "$TMP_CACHE_FILE")
+
     $CONSOLE_PATH/$CONSOLE_FILENAME $@
 fi
