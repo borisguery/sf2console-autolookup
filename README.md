@@ -26,8 +26,15 @@ Just clone the repository and move the file into `~/bin` (make sure it is in you
 
 ```bash
 $ git clone git://github.com/borisguery/sf2console-autolookup.git && cd sf2console-autolookup
-$ mv sf2console ~/bin/
-$ chmod +x ~/bin/sf2console
+$ mv sc ~/bin/
+$ chmod +x ~/bin/sc
+```
+
+Or for system-wide usage:
+
+```bash
+$ mv sc /usr/local/bin/
+$ chmod +x ~/bin/sc
 ```
 
 Usage
@@ -35,7 +42,7 @@ Usage
 
 Let's say you're currently in `sf2projectroot/app/cache/twig` for some debugging purpose
 ```bash
-$ sf2console twig:lint somefile
+$ sc twig:lint somefile
 ```
 
 It will run `sf2projectroot/app/console`
@@ -66,7 +73,7 @@ Autocomplete
 It is possible to autocomplete your command according to the path found by the script.
 It means that the result of the completion will vary depending on your path.
 
-To enable it, move the `sf2console.complete` into your completion directory. It should be either
+To enable it, move the `sc.complete` into your completion directory. It should be either
 `/etc/bash_completion.d` or `/opt/local/etc/bash_completion.d`.
 
 Make sure to `source /etc/bash_completion.d/sf2console.complete` the moved file to load the autocompletion.
