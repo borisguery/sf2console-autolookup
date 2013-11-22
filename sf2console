@@ -7,7 +7,7 @@
 # Configuration
 # =============
 
-# APP_ROOT & WEB_ROOT are the two minimum folder presents in sf2 project
+# APP_ROOT & WEB_ROOT are the two minimum folder presents in a Symfony2 project
 SF2_COMMON_APP_ROOT="app"
 SF2_COMMON_WEB_ROOT="web"
 SF2_COMMON_CONSOLE_FILENAME="console"
@@ -16,6 +16,8 @@ SHOW_PATH=0
 DRY_RUN=0
 TMP_CACHE_FILE=$(printf "/tmp/.sf2autolookup-%s" $(whoami))
 VERBOSE=0
+# Backward search depth limit
+DEPTH_LIMIT=2
 
 # Main
 # ====
@@ -79,7 +81,7 @@ if [ "$QUIET" -eq 0 -a  "$USE_CACHE" -eq 0 ]; then
 fi
 
 if [ -d "app" -a "$USE_CACHE" -eq 0 ]; then
-    CONSOLE_PATH=$(find .*/app -name "$SF2_COMMON_CONSOLE_FILENAME")
+    CONSOLE_PATH=$(find .*/app -name "$SF2_COMMON_CONSOLE_FILENAME" 2>/dev/null)
     if [ -n "$CONSOLE_PATH" ]; then
         CONSOLE_FILENAME=$(basename $CONSOLE_PATH | sed 's/\/\(\.\)$//g;s/\/$//g')
         CONSOLE_PATH=$(cd "$(dirname "$CONSOLE_PATH")"; pwd)
@@ -87,18 +89,19 @@ if [ -d "app" -a "$USE_CACHE" -eq 0 ]; then
     fi
 fi
 
-while [ "$CONSOLE_PATH_FOUND" -eq 0 -a "$START_CWD" != "/" -a "$USE_CACHE" -eq 0 ]; do
+CURRENT_DEPTH=0
+while [ "$CONSOLE_PATH_FOUND" -eq 0 -a "$START_CWD" != "/" -a "$USE_CACHE" -eq 0 -a "$CURRENT_DEPTH" -lt "$DEPTH_LIMIT" ]; do
     OLD_IFS="$IFS"
     IFS=$"
     ";
-    for DIR in $(find "$START_CWD" -type d -print);
+    for DIR in $(find "$START_CWD" -type d -print 2>/dev/null);
     do
         if [ -d "$DIR/$SF2_COMMON_WEB_ROOT" -a -d "$DIR/$SF2_COMMON_APP_ROOT" ]; then
             DIR=$(realpath $DIR)
             DIRS=( ${DIRS[@]} $DIR )
             for DIR in "${DIRS[@]}"
             do
-                CONSOLE_PATH=$(find "$DIR"/app -name "$SF2_COMMON_CONSOLE_FILENAME")
+                CONSOLE_PATH=$(find "$DIR"/app -name "$SF2_COMMON_CONSOLE_FILENAME" 2>/dev/null)
                 if [ -n "$CONSOLE_PATH" ]; then
                     CONSOLE_FILENAME=$(basename $CONSOLE_PATH | sed 's/\/\(\.\)$//g;s/\/$//g')
                     CONSOLE_PATH=$(cd "$(dirname "$CONSOLE_PATH")"; pwd)
@@ -110,12 +113,17 @@ while [ "$CONSOLE_PATH_FOUND" -eq 0 -a "$START_CWD" != "/" -a "$USE_CACHE" -eq 0
     done
     IFS="$OLD_IFS";
     START_CWD=$(realpath "$START_CWD/..")
+    CURRENT_DEPTH=$((CURRENT_DEPTH+1))
 done;
 
-printf "\r"
+printf "\r\033[0K"
 
 if [ "$CONSOLE_PATH_FOUND" -eq 0 ]; then
-    echo "console not found."
+    printf "console not found"
+    if [ "$CURRENT_DEPTH" -ge "$DEPTH_LIMIT" ]; then
+        printf " (depth limit reached: %d/%d)" $CURRENT_DEPTH $DEPTH_LIMIT
+    fi
+    printf ".\n"
     exit 1
 fi
 
