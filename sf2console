@@ -131,7 +131,7 @@ fi
 if [ "$DRY_RUN" -eq 0 ]; then
     verbose "Writing cache.."
     touch "$TMP_CACHE_FILE"
-    cat <<< "LAST_CWD=\""$(PWD)\""
+    cat <<< "LAST_CWD=\""$(pwd)\""
 CONSOLE_PATH=\""$CONSOLE_PATH\""
 CONSOLE_FILENAME=\""$CONSOLE_FILENAME\""
 " > $(realpath "$TMP_CACHE_FILE")
