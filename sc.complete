@@ -3,6 +3,7 @@
 # Author:   Boris Guéry <guery.b@gmail.com>
 # Homepage: https://github.com/borisguery/sf2console-autolookup
 #
+COMMAND_NAME="sc"
 
 _console() {
     local cur prev opts
@@ -10,13 +11,13 @@ _console() {
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     # if sf2console is not found in path we simply move away...
-    if [ ! -z $(which sf2console) ]; then
-        opts=$(sf2console list --raw | cut -f1 -d\   | tr '\n' ' ')
+    if [ ! -z $(which $COMMAND_NAME) ]; then
+        opts=$($COMMAND_NAME list --raw | cut -f1 -d\   | tr '\n' ' ')
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
     fi
 
     return 0
 }
 
-complete -F _console sf2console
+complete -F _console $COMMAND_NAME
 COMP_WORDBREAKS=${COMP_WORDBREAKS//:}
